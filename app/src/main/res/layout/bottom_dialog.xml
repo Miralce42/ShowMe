@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="2">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:text="@string/openCamera"
+            android:textColor="#000"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/image_camera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="30dp"
+            android:background="?android:selectableItemBackground"
+            android:gravity="center"
+            android:src="@drawable/ic_camera_50dp" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="5dp"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:background="#000" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:text="@string/openPicture"
+            android:textColor="#000"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/image_picture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:gravity="center"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:src="@drawable/ic_picture_50dp"/>
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+    <PreferenceCategory android:title="图片">
+        <CheckBoxPreference
+            android:title="@string/if_delete_pictures"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_pictures" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="所有类型">
+        <CheckBoxPreference
+            android:title="删除所有类型"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_all_type" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="选择类型">
+        <CheckBoxPreference
+            android:title="美食"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_food" />
+
+        <CheckBoxPreference
+            android:title="汽车"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_car" />
+
+        <CheckBoxPreference
+            android:title="商标"
+            android:defaultValue="false"
+            android:key="if_delete_logo" />
+
+        <CheckBoxPreference
+            android:title="动物"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_animal" />
+
+        <CheckBoxPreference
+            android:title="植物"
+            android:textColor="#000"
+            android:defaultValue="false"
+            android:key="if_delete_plant" />
+
+    </PreferenceCategory>
+
+    <com.hanzhuang42.showme.ColoredPreference
+        android:title="确认删除"
+        android:key="delete_ensure" />
+
+</PreferenceScreen>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="?attr/colorPrimary">
+    <item android:title="@string/nav_op">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_img"
+                    android:icon="@drawable/nav_camera"
+                    android:title="@string/openPicture" />
+                <item
+                    android:id="@+id/nav_camera"
+                    android:icon="@drawable/nav_camera_alt"
+                    android:title="@string/openCamera" />
+                <item
+                    android:id="@+id/nav_del"
+                    android:icon="@drawable/nav_del_forv"
+                    android:title="@string/delete_forerver" />
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="@string/nav_other">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_fb"
+                    android:icon="@drawable/nav_guide"
+                    android:title="@string/nav_feedback" />
+                <item
+                    android:id="@+id/nav_mail"
+                    android:icon="@drawable/nav_mail"
+                    android:title="Mail" />
+                <item
+                    android:id="@+id/nav_task"
+                    android:icon="@drawable/nav_task"
+                    android:title="Tasks" />
+            </group>
+        </menu>
+    </item>
+</menu>

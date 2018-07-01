@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Show Me</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="drawer_open">打开</string>
+    <string name="drawer_close">关闭</string>
+    <string name="email">hanzhuang42@foxmail.com</string>
+    <string name="myName">韩壮</string>
+    <string name="abort">关于</string>
+    <string name="openCamera">拍摄照片</string>
+    <string name="openPicture">打开相册</string>
+    <string name="bottomText">我是底线！</string>
+    <string name="sm">SM</string>
+
+    <string name="if_delete_pictures">同时删除图片</string>
+    <string name="if_delete_all_type">删除所有类型</string>
+    <string name="delete_forerver">清空记录</string>
+    <string name="nav_op">操作</string>
+    <string name="nav_feedback">反馈</string>
+    <string name="nav_other">其他</string>
+</resources>
