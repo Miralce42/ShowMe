@@ -2,14 +2,18 @@ package com.hanzhuang42.showme.activitys;
 
 import android.accounts.NetworkErrorException;
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -43,11 +47,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import cn.sharesdk.framework.ShareSDK;
+import cn.sharesdk.onekeyshare.OnekeyShare;
 
 public class ShowActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -55,6 +63,7 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "ShowActivity";
 
     private TextView textView;
+    private TextView yearText;
     private ProgressBar showProgressBar;
     private ImageView imageView;
 
@@ -76,6 +85,7 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
 
         imageView = findViewById(R.id.show_image_view);
         textView = findViewById(R.id.show_content_text);
+        yearText = findViewById(R.id.show_year);
         showProgressBar = findViewById(R.id.show_progress_bar);
         showProgressBar.setVisibility(View.VISIBLE);
 
@@ -97,18 +107,19 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         Intent intent = getIntent();
-        str_uri= intent.getStringExtra("uri");
+        str_uri = intent.getStringExtra("uri");
         picture_path = intent.getStringExtra("picture_path");
-        show_id = intent.getIntExtra("detectObject_id",-1);
+        show_id = intent.getIntExtra("detectObject_id", -1);
         detectType = intent.getIntExtra("detect_type", -1);
 
 
         //从已有项（数据库）中初始化
-        if(show_id != -1){
+        if (show_id != -1) {
             List<DetectObject> detectObjectList = DbUtility.queryByid(show_id);
-            if(detectObjectList.size() == 1){
+            if (detectObjectList.size() == 1) {
                 detectObject = detectObjectList.get(0);
-                textView.setText(detectObject.getName());
+                detectType = detectObject.getType();
+                showContent(detectObject, detectType);
                 String tmp_path = detectObject.getImgPath();
                 if (tmp_path != null) {
                     File file = new File(tmp_path);
@@ -132,13 +143,12 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
                 Bundle data = msg.getData();
                 String val = data.getString("value");
                 detectObjectList = parseJSONWithGSON(val);
-                if(detectObjectList == null){
-                    MyToast.showToast(ShowActivity.this,"检测失败！", Toast.LENGTH_LONG);
+                if (detectObjectList == null) {
+                    MyToast.showToast(ShowActivity.this, "检测失败！", Toast.LENGTH_LONG);
                     showProgressBar.setVisibility(View.GONE);
-                }
-                else {
+                } else {
                     detectObject = detectObjectList.get(0);
-                    textView.setText(val);
+                    showContent(detectObject, detectType);
                     showProgressBar.setVisibility(View.GONE);
                     MyToast.showToast(ShowActivity.this, "检测完成，点击星星保存记录和图片(✧◡✧)", Toast.LENGTH_LONG);
                 }
@@ -146,14 +156,14 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
         };
 
         //从拍摄或选择的照片进行初始化
-        if(str_uri != null) {
+        if (str_uri != null) {
             try {
                 uri = Uri.parse(str_uri);
-                if(picture_path == null) {
+                if (picture_path == null) {
                     //拍摄的照片
                     bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
                     Glide.with(this).load(bitmap).into(imageView);
-                }else{
+                } else {
                     //从相册选取的照片
                     Glide.with(this).load(uri).into(imageView);
                     bitmap = BitmapFactory.decodeFile(picture_path);
@@ -163,8 +173,7 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
                     MyToast.showToast(ShowActivity.this, "无法读取照片,检测失败", Toast.LENGTH_SHORT);
                     Log.i(TAG, "----------------------------------------ShowActivity 无法读取图片");
                     finish();
-                }
-                else {
+                } else {
 //                    Bitmap myBitmap = Bitmap.createScaledBitmap(bitmap, 400, 400, true);
                     baos = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
@@ -176,7 +185,7 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
                         public void run() {
                             JSONObject res = null;
                             try {
-                                res =detectByType(detectType,final_img_datas);
+                                res = detectByType(detectType, final_img_datas);
                             } catch (NetworkErrorException e) {
                                 e.printStackTrace();
                             }
@@ -194,39 +203,39 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private List<DetectObject> parseJSONWithGSON(String jsonData){
+    private List<DetectObject> parseJSONWithGSON(String jsonData) {
         JSONArray jsonArray = null;
-        if(jsonData.contains("error_code")){
-            Log.d(TAG+"_error_code",jsonData);
+        if (jsonData.contains("error_code")) {
+            Log.d(TAG + "_error_code", jsonData);
             return null;
         }
         List<DetectObject> res = new ArrayList<>();
         try {
-            Log.d(TAG+"Debug",jsonData);
+            Log.d(TAG + "Debug", jsonData);
             JSONObject jsonTmp = new JSONObject(jsonData);
             jsonArray = jsonTmp.getJSONArray("result");
-            for(int i = 0;i<jsonArray.length();i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 DetectObject tmp_detectObject = new DetectObject();
                 tmp_detectObject.setType(detectType);
                 tmp_detectObject.setName(jsonObject.getString("name"));
-                if(jsonObject.has("probability")) {
+                if (jsonObject.has("probability")) {
                     double probability = jsonObject.getDouble("probability");
                     tmp_detectObject.setProbability(probability);
                 }
-                if(jsonObject.has("score")){
+                if (jsonObject.has("score")) {
                     double score = jsonObject.getDouble("score");
                     tmp_detectObject.setProbability(score);
                 }
-                if(jsonObject.has("year")){
+                if (jsonObject.has("year")) {
                     String year = jsonObject.getString("year");
                     tmp_detectObject.setYearOrCalorie(year);
                 }
-                if(jsonObject.has("calorie")){
+                if (jsonObject.has("calorie")) {
                     String calorie = jsonObject.getString("calorie");
                     tmp_detectObject.setYearOrCalorie(calorie);
                 }
-                if(jsonTmp.has("color_result")){
+                if (jsonTmp.has("color_result")) {
                     String color_result = jsonTmp.getString("color_result");
                     tmp_detectObject.setCar_color(color_result);
                 }
@@ -239,48 +248,48 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private JSONObject detectByType(int type, byte[] final_img_datas) throws NetworkErrorException {
-        HashMap<String,String> hashMap=new HashMap<String, String>();
-        hashMap.put("top_num","3");
+        HashMap<String, String> hashMap = new HashMap<String, String>();
+        hashMap.put("top_num", "3");
         JSONObject res = null;
-         switch (type) {
-             case 0:
-                 res = DetectAPI.client.dishDetect(final_img_datas, hashMap);
-                 break;
-             case 1:
-                 res = DetectAPI.client.carDetect(final_img_datas, hashMap);
-                 break;
-             case 2:
-                 res = DetectAPI.client.logoSearch(final_img_datas, hashMap);
-                 break;
-             case 3:
-                 res = DetectAPI.client.animalDetect(final_img_datas, hashMap);
-                 break;
-             case 4:
-                 res = DetectAPI.client.plantDetect(final_img_datas, hashMap);
-                 break;
-         }
+        switch (type) {
+            case 0:
+                res = DetectAPI.client.dishDetect(final_img_datas, hashMap);
+                break;
+            case 1:
+                res = DetectAPI.client.carDetect(final_img_datas, hashMap);
+                break;
+            case 2:
+                res = DetectAPI.client.logoSearch(final_img_datas, hashMap);
+                break;
+            case 3:
+                res = DetectAPI.client.animalDetect(final_img_datas, hashMap);
+                break;
+            case 4:
+                res = DetectAPI.client.plantDetect(final_img_datas, hashMap);
+                break;
+        }
         return res;
     }
 
-    @SuppressLint("HandlerLeak") final Handler img_handler = new Handler(){
+    @SuppressLint("HandlerLeak")
+    final Handler img_handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             Bundle data = msg.getData();
             int ess = data.getInt("ExternalStorageState");
-            if(ess == -1){
+            if (ess == -1) {
                 storeImgPath = null;
-                MyToast.showToast(ShowActivity.this,"图片保存失败!", Toast.LENGTH_SHORT);
-            }
-            else {
+                MyToast.showToast(ShowActivity.this, "图片保存失败!", Toast.LENGTH_SHORT);
+            } else {
                 storeImgPath = data.getString("imgPath");
                 storeDetectObject();
             }
         }
     };
 
-    private void storeData(){
-        if(bitmap != null) {
+    private void storeData() {
+        if (bitmap != null) {
             final Bitmap finalBitmap = bitmap;
             new Runnable() {
                 @Override
@@ -327,19 +336,18 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void storeDetectObject(){
-        if(storeImgPath != null){
+    public void storeDetectObject() {
+        if (storeImgPath != null) {
             detectObject.setImgPath(storeImgPath);
             detectObject.save();
-            MyToast.showToast(ShowActivity.this,"保存成功!", Toast.LENGTH_SHORT);
-        }
-        else{
-            Log.d(TAG,"图像路径为空，对象保存失败！");
-            MyToast.showToast(ShowActivity.this,"保存失败!", Toast.LENGTH_SHORT);
+            MyToast.showToast(ShowActivity.this, "保存成功!", Toast.LENGTH_SHORT);
+        } else {
+            Log.d(TAG, "图像路径为空，对象保存失败！");
+            MyToast.showToast(ShowActivity.this, "保存失败!", Toast.LENGTH_SHORT);
         }
     }
 
-    private boolean isSaved(){
+    private boolean isSaved() {
         return detectObject.getImgPath() != null;
     }
 
@@ -353,24 +361,24 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    private void deleteObject(){
+    private void deleteObject() {
         boolean deleted = false;
         String tmp_path = detectObject.getImgPath();
-        if(tmp_path != null){
+        if (tmp_path != null) {
             File tmp_file = new File(tmp_path);
             if (tmp_file.exists()) {
-                if(tmp_file.delete()){
+                if (tmp_file.delete()) {
                     Uri uri = Uri.fromFile(tmp_file);
                     sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
                     DbUtility.deleteById(detectObject.getId());
                     deleted = true;
                     finish();
-                    MyToast.showToast(ShowActivity.this,"删除成功!", Toast.LENGTH_SHORT);
+                    MyToast.showToast(ShowActivity.this, "删除成功!", Toast.LENGTH_SHORT);
                 }
             }
         }
-        if(!deleted){
-            MyToast.showToast(ShowActivity.this,"删除失败!", Toast.LENGTH_SHORT);
+        if (!deleted) {
+            MyToast.showToast(ShowActivity.this, "删除失败!", Toast.LENGTH_SHORT);
         }
     }
 
@@ -378,24 +386,21 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab_save:
-                if(detectObject == null){
-                    Log.d(TAG,"保存未初始化对象！");
-                    MyToast.showToast(ShowActivity.this,"检测未成功，不能保存!", Toast.LENGTH_SHORT);
-                }
-                else if(isSaved()){
-                    MyToast.showToast(ShowActivity.this,"不能重复保存!", Toast.LENGTH_SHORT);
-                }
-                else{
+                if (detectObject == null) {
+                    Log.d(TAG, "保存未初始化对象！");
+                    MyToast.showToast(ShowActivity.this, "检测未成功，不能保存!", Toast.LENGTH_SHORT);
+                } else if (isSaved()) {
+                    MyToast.showToast(ShowActivity.this, "不能重复保存!", Toast.LENGTH_SHORT);
+                } else {
                     storeData();
                 }
                 break;
             case R.id.fab_delete:
-                if(!isSaved()){
-                    Log.d(TAG,"删除未初始化对象！");
-                    MyToast.showToast(ShowActivity.this,"没有保存，不能删除！", Toast.LENGTH_SHORT);
-                }
-                else{
-                    AlertDialog.Builder builder= new AlertDialog.Builder(this,R.style.Theme_AppCompat_Light_Dialog_Alert);
+                if (!isSaved()) {
+                    Log.d(TAG, "删除未初始化对象！");
+                    MyToast.showToast(ShowActivity.this, "没有保存，不能删除！", Toast.LENGTH_SHORT);
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light_Dialog_Alert);
                     builder.setTitle("删除");
                     builder.setMessage("图片也将被删除，且无法恢复！你确定要删除吗？");
                     builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -409,17 +414,79 @@ public class ShowActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.fab_share:
+                if(isSaved()) {
+                    showShare();
+                } else{
+                    MyToast.showToast(ShowActivity.this, "没有保存，不能分享！", Toast.LENGTH_SHORT);
+                }
                 break;
             case R.id.show_image_view:
-                if(uri == null){
-                    MyToast.showToast(ShowActivity.this,"浏览图片失败！", Toast.LENGTH_SHORT);
-                }
-                else {
+                if (uri == null) {
+                    MyToast.showToast(ShowActivity.this, "浏览图片失败！", Toast.LENGTH_SHORT);
+                } else {
                     Intent intent = new Intent(this, ViewImageActivity.class);
-                    intent.putExtra("uri",uri.toString());
+                    intent.putExtra("uri", uri.toString());
                     startActivity(intent);
                 }
                 break;
         }
+    }
+
+    private void showContent(DetectObject obj, int type) {
+        String str = "名称：" + obj.getName()
+                + "\n\n可能性：" + obj.getProbability();
+        switch (type) {
+            case 0:
+                str += "\n\n卡路里：" + obj.getYearOrCalorie();
+                break;
+            case 1:
+                str += "\n\n生产年份：" + obj.getYearOrCalorie()
+                        + "\n\n颜色：" + obj.getCar_color();
+                break;
+        }
+        textView.setText(str);
+        yearText.setText(obj.getDate(1));
+    }
+
+    private void showShare() {
+        OnekeyShare oks = new OnekeyShare();
+        //关闭sso授权
+        oks.disableSSOWhenAuthorize();
+
+        // 分享时Notification的图标和文字  2.5.9以后的版本不     调用此方法
+        //oks.setNotification(R.drawable.ic_launcher, getString(R.string.app_name));
+        // title标题，印象笔记、邮箱、信息、微信、人人网和QQ空间使用
+        oks.setTitle(getString(R.string.share));
+        // text是分享文本，所有平台都需要这个字段
+        oks.setText("猜猜这是什么？");
+        // imagePath是图片的本地路径，Linked-In以外的平台都支持此参数
+        oks.setImagePath(getPath(uri));//确保SDcard下面存在此张图片
+        // site是分享此内容的网站名称，仅在QQ空间使用
+        oks.setSite(getString(R.string.app_name));
+        // 启动分享GUI
+        oks.show(this);
+    }
+
+    private String getPath(Uri uri) {
+        if ( null == uri ) return null;
+        final String scheme = uri.getScheme();
+        String data = null;
+        if ( scheme == null )
+            data = uri.getPath();
+        else if ( ContentResolver.SCHEME_FILE.equals( scheme ) ) {
+            data = uri.getPath();
+        } else if ( ContentResolver.SCHEME_CONTENT.equals( scheme ) ) {
+            Cursor cursor = getContentResolver().query( uri, new String[] { MediaStore.Images.ImageColumns.DATA }, null, null, null );
+            if ( null != cursor ) {
+                if ( cursor.moveToFirst() ) {
+                    int index = cursor.getColumnIndex( MediaStore.Images.ImageColumns.DATA );
+                    if ( index > -1 ) {
+                        data = cursor.getString( index );
+                    }
+                }
+                cursor.close();
+            }
+        }
+        return data;
     }
 }

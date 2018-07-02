@@ -46,6 +46,8 @@ public class DeleteActivity extends AppCompatPreferenceActivity {
         setupActionBar();
         addPreferencesFromResource(R.xml.preference);
         preferences = getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+        initSetting();
+
         findPreference(keys[1]).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -134,6 +136,13 @@ public class DeleteActivity extends AppCompatPreferenceActivity {
         if (actionBar != null) {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private void initSetting(){
+        Boolean b = preferences.getBoolean(keys[1], false);
+        for(int i = 2; i< 7;i++){
+            findPreference(keys[i]).setEnabled(!b);
         }
     }
 

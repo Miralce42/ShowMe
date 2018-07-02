@@ -19,4 +19,6 @@
     <string name="nav_op">操作</string>
     <string name="nav_feedback">反馈</string>
     <string name="nav_other">其他</string>
+    <string name="nav_code">源码</string>
+    <string name="share">ShowMe分享</string>
 </resources>

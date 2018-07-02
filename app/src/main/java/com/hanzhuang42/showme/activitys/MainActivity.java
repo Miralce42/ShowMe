@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 Intent intent = null;
+                Uri uri = null;
                 switch (item.getItemId()) {
                     case R.id.nav_img:
                         callAlbum();
@@ -140,12 +141,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         startActivity(intent);
                         break;
                     case R.id.nav_fb:
-                        Uri uri = Uri.parse("mailto:hanzhuang42@foxmail.com");
+                        uri = Uri.parse("mailto:hanzhuang42@foxmail.com");
                         String[] email = {"hanzhuang42@foxmail.com"};
                         intent = new Intent(Intent.ACTION_SENDTO, uri);
                         intent.putExtra(Intent.EXTRA_CC, email); // 抄送人
                         intent.putExtra(Intent.EXTRA_SUBJECT, "ShowMe应用用户反馈"); // 主题
                         startActivity(Intent.createChooser(intent, "请选择邮件类应用"));
+                        break;
+                    case R.id.nav_code:
+                        uri = Uri.parse("https://github.com/Miralce42/ShowMe");
+                        intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
                         break;
                 }
                 return true;
@@ -237,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onClick(View v) {
                     mViewPager.notifyHeaderChanged();
-                    MyToast.showToast(getApplicationContext(), "点击按钮拍摄或者选择图片进行检测！", Toast.LENGTH_SHORT);
+                    MyToast.showToast(getApplicationContext(), "点击按钮进行图片检测！", Toast.LENGTH_SHORT);
                 }
             });
         }

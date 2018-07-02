@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.hanzhuang42.showme.R;
 import com.hanzhuang42.showme.activitys.ShowActivity;
 import com.hanzhuang42.showme.db.DetectObject;
+import com.hanzhuang42.showme.util.MyToast;
 
 import java.io.File;
 import java.util.List;
@@ -43,7 +44,6 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
             name_text = itemView.findViewById(R.id.name_text);
             date_text = itemView.findViewById(R.id.date_text);
             card_view = itemView.findViewById(R.id.card_view);
-            small_card = itemView.findViewById(R.id.small_card);
         }
     }
 

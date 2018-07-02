@@ -1,9 +1,13 @@
 package com.hanzhuang42.showme.db;
 
+import android.annotation.SuppressLint;
+
 import com.google.gson.annotations.SerializedName;
 
 import org.litepal.crud.DataSupport;
 
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -30,13 +34,17 @@ public class DetectObject extends DataSupport {
 
     public DetectObject() {
         date = new Date();
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-//        sdf.format(date);
+    }
+
+    public String getDate(int flag){
+        Date time = date;
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(time);
     }
 
     public String getDate(){
         Date time = date;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(time);
     }
 
@@ -80,11 +88,15 @@ public class DetectObject extends DataSupport {
         this.car_color = car_color;
     }
 
-    public double getProbability() {
-        return probability;
+    public String getProbability() {
+        NumberFormat num = NumberFormat.getPercentInstance();
+        num.setMinimumFractionDigits(2);//设置保留小数位
+        num.setRoundingMode(RoundingMode.HALF_UP); //设置舍入模式
+        return num.format(probability);
     }
 
     public void setProbability(double probability) {
+
         this.probability = probability;
     }
 

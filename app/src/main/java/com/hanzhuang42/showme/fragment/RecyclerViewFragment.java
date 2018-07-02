@@ -61,6 +61,7 @@ public class RecyclerViewFragment extends Fragment {
         refreshList(type);
         adapter.notifyDataSetChanged();
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_recyclerview, container, false);

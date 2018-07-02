@@ -15,7 +15,7 @@
         <CheckBoxPreference
             android:title="删除所有类型"
             android:textColor="#000"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="if_delete_all_type" />
     </PreferenceCategory>
 

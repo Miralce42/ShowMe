@@ -24,17 +24,13 @@
         <menu>
             <group android:checkableBehavior="single">
                 <item
+                android:id="@+id/nav_code"
+                android:icon="@drawable/nav_code"
+                android:title="@string/nav_code" />
+                <item
                     android:id="@+id/nav_fb"
-                    android:icon="@drawable/nav_guide"
+                    android:icon="@drawable/nav_feedback"
                     android:title="@string/nav_feedback" />
-                <item
-                    android:id="@+id/nav_mail"
-                    android:icon="@drawable/nav_mail"
-                    android:title="Mail" />
-                <item
-                    android:id="@+id/nav_task"
-                    android:icon="@drawable/nav_task"
-                    android:title="Tasks" />
             </group>
         </menu>
     </item>
